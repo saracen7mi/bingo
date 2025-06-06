@@ -200,9 +200,24 @@
             width: 90%;
             height: 80vh;
         }
+        #loading-screen { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0, 0, 0, 0.9); 
+            color: white; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 1000; 
+            font-size: 24px;
+        }
     </style>
 </head>
 <body>
+    <div id="loading-screen">Učitavanje...</div>
     <audio id="audio-bosnian">
         <source src="" type="audio/mpeg">
     </audio>
@@ -219,39 +234,39 @@
         <source src="" type="audio/mpeg">
     </audio>
     <a-scene embedded arjs="sourceType: webcam; trackingMethod: best; debugUIEnabled: false;">
-        <a-plane color="#008000" height="3.5" width="6.5" position="0 0.5 -5" opacity="0.9"></a-plane>
-        <a-assets>
+        <a-assets timeout="30000">
             <a-asset-item id="model" src="https://cdn.jsdelivr.net/gh/saracen7mi/bingo@main/animated_background_store.glb"></a-asset-item>
         </a-assets>
-        <a-entity id="animatedModel" gltf-model="#model" position="0 -0.8 -8" scale="1 1 1" rotation="0 0 0" custom-animation></a-entity>
-        <a-camera position="0 1.6 0">
-            <a-cursor color="#FF0000" radius="0.05" position="0 0 -1"></a-cursor>
-        </a-camera>
-        <a-entity id="stars-container"></a-entity>
-        <a-light id="flash-light" type="point" intensity="0" color="white" position="0 3 -3"></a-light>
-        <a-light type="ambient" color="#666"></a-light>
+        <a-entity id="animatedModel" gltf-model="#model" position="0 -0.1 -4" scale="1 1 1" rotation="0 0 0" custom-animation></a-entity>
+        <a-plane color="#008000" height="3.5" width="6.5" position="0 0.5 -5" opacity="0.9"></a-plane>
         <a-entity id="eng-button" geometry="primitive: plane; height: 0.5; width: 1.5"
                   material="color: red" position="-2.5 2 -4.9"
-                  text="value: ENG; color: white; align: center; width: 3;">
+                  text="value: ENG; color: white; align: center; width: 3;" audio-button="audio: audio-english">
         </a-entity>
         <a-entity id="deu-button" geometry="primitive: plane; height: 0.5; width: 1.5"
                   material="color: yellow" position="-1 2 -4.9"
-                  text="value: DEU; color: black; align: center; width: 3;">
+                  text="value: DEU; color: black; align: center; width: 3;" audio-button="audio: audio-german">
         </a-entity>
         <a-entity id="ita-button" geometry="primitive: plane; height: 0.5; width: 1.5"
                   material="color: blue" position="0.5 2 -4.9"
-                  text="value: ITA; color: white; align: center; width: 3;">
+                  text="value: ITA; color: white; align: center; width: 3;" audio-button="audio: audio-italian">
         </a-entity>
         <a-entity id="tur-button" geometry="primitive: plane; height: 0.5; width: 1.5"
                   material="color: brown" position="2 2 -4.9"
-                  text="value: TUR; color: white; align: center; width: 3;">
+                  text="value: TUR; color: white; align: center; width: 3;" audio-button="audio: audio-turkish">
         </a-entity>
-        <a-text value="DOBRODOSLI        U             BINGO" 
-                position="-0.7 1.6 -5" 
-                align="center" 
-                color="white" 
+        <a-entity id="stars-container" falling-stars></a-entity>
+        <a-light id="flash-light" type="point" intensity="0" color="white" position="0 3 -3"></a-light>
+        <a-light type="ambient" color="#666"></a-light>
+        <a-text value="Posjetite Baba-Hasino Turbe"
+                position="0.7 1.6 -5"
+                align="center"
+                color="white"
                 width="6">
         </a-text>
+        <a-camera position="0 1.6 0">
+            <a-cursor color="#FF0000" radius="0.05" position="0 0 -1"></a-cursor>
+        </a-camera>
     </a-scene>
 
     <script>
@@ -262,15 +277,22 @@
                 let clock = new THREE.Clock();
 
                 el.addEventListener('model-loaded', (e) => {
+                    console.log('Model uspješno učitan!', e.detail);
                     let model = e.detail.model;
-                    if (model.animations.length > 0) {
+                    if (model.animations && model.animations.length > 0) {
                         let clip = mixer.clipAction(model.animations[0], model);
                         clip.play();
                         this.mixer = mixer;
                         this.clock = clock;
+                        console.log('Animacija pokrenuta!');
                     } else {
-                        console.warn("No animations found in the model!");
+                        console.warn('Nema animacija u modelu!');
                     }
+                    document.getElementById('loading-screen').style.display = 'none';
+                });
+                el.addEventListener('model-error', (e) => {
+                    console.error('Greška pri učitavanju modela:', e.detail);
+                    document.getElementById('loading-screen').innerText = 'Greška pri učitavanju modela! Provjerite da li fajl postoji na https://cdn.jsdelivr.net/gh/saracen7mi/bingo@main/animated_background_store.glb';
                 });
             },
             tick: function () {
@@ -283,14 +305,12 @@
         AFRAME.registerComponent("falling-stars", {
             init: function () {
                 let scene = document.querySelector("#stars-container");
-
                 for (let i = 0; i < 15; i++) {
                     let star = document.createElement("a-sphere");
                     star.setAttribute("radius", "0.05");
                     star.setAttribute("color", "#FFD700");
                     star.setAttribute("position", `${(Math.random() - 0.5) * 8} ${Math.random() * 3 + 2} ${-4}`);
                     scene.appendChild(star);
-
                     this.animateStar(star);
                 }
             },
@@ -298,9 +318,7 @@
                 function fall() {
                     let startY = Math.random() * 3 + 2;
                     let duration = Math.random() * 3000 + 2000;
-
                     star.setAttribute("position", `${(Math.random() - 0.5) * 8} ${startY} -4`);
-
                     star.setAttribute("animation", {
                         property: "position",
                         to: `${(Math.random() - 0.5) * 8} -1 -4`,
@@ -308,23 +326,36 @@
                         easing: "linear",
                         loop: false
                     });
-
                     setTimeout(() => fall(), duration);
                 }
                 fall();
             }
         });
 
-        document.querySelector("#stars-container").setAttribute("falling-stars", "");
+        AFRAME.registerComponent('audio-button', {
+            schema: {
+                audio: { type: 'string' }
+            },
+            init: function () {
+                this.el.addEventListener('click', () => {
+                    const audioElement = document.getElementById(this.data.audio);
+                    if (audioElement) {
+                        stopAllAudio();
+                        audioElement.play().catch(e => console.error('Greška pri reprodukciji audija:', e));
+                    } else {
+                        console.error('Audio element ne postoji:', this.data.audio);
+                    }
+                });
+            }
+        });
 
         function flashEffect() {
             let light = document.querySelector("#flash-light");
             let intensity = Math.random() * 2;
             light.setAttribute("intensity", intensity);
-
             setTimeout(() => {
                 light.setAttribute("intensity", "0");
-                setTimeout(flashEffect, Math.random() * 0.5 + 0.2);
+                setTimeout(flashEffect, Math.random() * 500 + 200);
             }, 100);
         }
         flashEffect();
@@ -336,33 +367,33 @@
         let turkishAudio = document.getElementById('audio-turkish');
 
         function stopAllAudio() {
-            [bosnian
-
-System: nAudio, englishAudio, germanAudio, italianAudio, turkishAudio].forEach(audio => {
-                audio.pause();
-                audio.currentTime = 0;
+            [bosnianAudio, englishAudio, germanAudio, italianAudio, turkishAudio].forEach(audio => {
+                if (audio) {
+                    audio.pause();
+                    audio.currentTime = 0;
+                }
             });
         }
 
         function playAudio(audioElement) {
             stopAllAudio();
-            audioElement.play();
+            audioElement.play().catch(e => console.error('Greška pri reprodukciji audija:', e));
         }
 
-        document.getElementById('eng-button').addEventListener('mouseenter', () => playAudio(englishAudio));
-        document.getElementById('deu-button').addEventListener('mouseenter', () => playAudio(germanAudio));
-        document.getElementById('ita-button').addEventListener('mouseenter', () => playAudio(italianAudio));
-        document.getElementById('tur-button').addEventListener('mouseenter', () => playAudio(turkishAudio));
+        document.getElementById('eng-button').addEventListener('click', () => playAudio(englishAudio));
+        document.getElementById('deu-button').addEventListener('click', () => playAudio(germanAudio));
+        document.getElementById('ita-button').addEventListener('click', () => playAudio(italianAudio));
+        document.getElementById('tur-button').addEventListener('click', () => playAudio(turkishAudio));
 
         window.addEventListener('load', () => {
+            console.log('Stranica učitana. Provjeravam resurse...');
             document.body.addEventListener('click', () => {
-                if (bosnianAudio.paused) {
-                    bosnianAudio.play();
+                if (bosnianAudio && bosnianAudio.paused) {
+                    bosnianAudio.play().catch(e => console.error('Greška pri reprodukciji bosanskog audija:', e));
                 }
             }, { once: true });
         });
     </script>
 </body>
 </html>
-
  
