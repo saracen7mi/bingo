@@ -456,32 +456,32 @@
         <a-assets timeout="30000">
             <a-asset-item id="model" src="https://cdn.jsdelivr.net/gh/saracen7mi/bingo@main/animated_background.glb"></a-asset-item>
         </a-assets>
-        <a-entity id="animatedModel" gltf-model="#model" position="0 -0.1 -4" scale="0.05 0.05 0.05" rotation="0 0 0" custom-animation></a-entity>
-        <a-plane color="#008000" height="0.5" width="1.0" position="0 0.1 -2.5" opacity="0.9"></a-plane>
-        <a-entity id="eng-button" geometry="primitive: plane; height: 0.1; width: 0.3"
-                  material="color: red" position="-0.4 0.5 -2.4"
-                  text="value: ENG; color: white; align: center; width: 0.6;" audio-button="audio: audio-english">
+        <a-entity id="animatedModel" gltf-model="#model" position="0 -0.1 -4" scale="0.2 0.2 0.2" rotation="0 0 0" custom-animation></a-entity>
+        <a-plane color="#008000" height="1.5" width="3.0" position="0 0.3 -3.5" opacity="0.9"></a-plane>
+        <a-entity id="eng-button" geometry="primitive: plane; height: 0.3; width: 0.7"
+                  material="color: red" position="-1.0 1.0 -3.4"
+                  text="value: ENG; color: white; align: center; width: 1.4;" audio-button="audio: audio-english">
         </a-entity>
-        <a-entity id="deu-button" geometry="primitive: plane; height: 0.1; width: 0.3"
-                  material="color: yellow" position="-0.15 0.5 -2.4"
-                  text="value: DEU; color: black; align: center; width: 0.6;" audio-button="audio: audio-german">
+        <a-entity id="deu-button" geometry="primitive: plane; height: 0.3; width: 0.7"
+                  material="color: yellow" position="-0.3 1.0 -3.4"
+                  text="value: DEU; color: black; align: center; width: 1.4;" audio-button="audio: audio-german">
         </a-entity>
-        <a-entity id="ita-button" geometry="primitive: plane; height: 0.1; width: 0.3"
-                  material="color: blue" position="0.1 0.5 -2.4"
-                  text="value: ITA; color: white; align: center; width: 0.6;" audio-button="audio: audio-italian">
+        <a-entity id="ita-button" geometry="primitive: plane; height: 0.3; width: 0.7"
+                  material="color: blue" position="0.4 1.0 -3.4"
+                  text="value: ITA; color: white; align: center; width: 1.4;" audio-button="audio: audio-italian">
         </a-entity>
-        <a-entity id="tur-button" geometry="primitive: plane; height: 0.1; width: 0.3"
-                  material="color: brown" position="0.35 0.5 -2.4"
-                  text="value: TUR; color: white; align: center; width: 0.6;" audio-button="audio: audio-turkish">
+        <a-entity id="tur-button" geometry="primitive: plane; height: 0.3; width: 0.7"
+                  material="color: brown" position="1.1 1.0 -3.4"
+                  text="value: TUR; color: white; align: center; width: 1.4;" audio-button="audio: audio-turkish">
         </a-entity>
         <a-entity id="stars-container" falling-stars></a-entity>
         <a-light id="flash-light" type="point" intensity="0" color="white" position="0 3 -3"></a-light>
         <a-light type="ambient" color="#666"></a-light>
         <a-text value="Posjetite Baba-Hasino Turbe"
-                position="0.1 0.4 -2.5"
+                position="0.3 0.8 -3.5"
                 align="center"
                 color="white"
-                width="1">
+                width="3">
         </a-text>
         <a-camera position="0 1.6 0">
             <a-cursor color="#FF0000" radius="0.05" position="0 0 -1"></a-cursor>
@@ -608,14 +608,13 @@
             console.log('Stranica učitana. Provjeravam resurse...');
             document.body.addEventListener('click', () => {
                 if (bosnianAudio && bosnianAudio.paused) {
-                    bosnianAudio(bosnianAudio);
+                    bosnianAudio.play().catch(e => console.error('Greška pri reprodukciji bosanskog audija:', e));
                 }
             }, { once: true });
         });
     </script>
 </body>
 </html>
-
 
 
 
